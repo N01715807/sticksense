@@ -1,26 +1,34 @@
-const BASE_URL = 'https://statsapi.web.nhl.com/api/v1';
+// src/services/nhl.api.js
+const BASE_URL = 'https://api-web.nhle.com/v1';
 
 export async function fetchSchedule(daysAhead = 10) {
-  //setup startTime and endTime
+  // setup startTime and endTime
   const start = new Date();
-  const end = new Date();
-  end.setDate(start.getDate() + daysAhead);
+  const results = [];
 
-  //transform to YYYY-MM-DD
-  const startDate = start.toISOString().split('T')[0];
-  const endDate = end.toISOString().split('T')[0];
+  for (let i = 0; i < daysAhead; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
 
-  const url = `${BASE_URL}/schedule?startDate=${startDate}&endDate=${endDate}`;
+    // transform to YYYY-MM-DD
+    const dateStr = d.toISOString().split('T')[0];
 
-  //defensive coding
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`NHL API error: ${response.status}`);
+    const url = `${BASE_URL}/schedule/${dateStr}`;
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        console.error(`NHL API error: ${response.status} (${dateStr})`);
+        continue; 
+      }
+
+      const json = await response.json();
+      results.push(json);
+    } catch (error) {
+      console.error(`Failed to fetch schedule for ${dateStr}:`, error.message);
     }
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch NHL schedule:', error);
-    return null;
   }
+
+  return results;
 }
