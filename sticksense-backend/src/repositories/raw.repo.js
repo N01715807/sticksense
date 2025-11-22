@@ -3,8 +3,20 @@ import { RawSchedule } from '../models/rawSchedule.model.js';
 
 await getDb();
 
-export async function insertRaw({ source, kind, request, payload, fetchedAt = new Date(), traceId }) {
-  const doc = new RawSchedule({ source, kind, request, payload, fetchedAt, meta: { traceId } });
+export async function insertRaw({ 
+  source, 
+  kind, 
+  request, 
+  payload, 
+  fetchedAt = new Date(), traceId 
+}) {
+  const doc = new RawSchedule({ 
+    source, 
+    kind, 
+    request, 
+    payload, 
+    fetchedAt, 
+    meta: { traceId } });
   await doc.save();
   return { insertedId: doc._id };
 }
