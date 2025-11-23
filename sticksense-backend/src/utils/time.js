@@ -1,35 +1,29 @@
-// src/utils/time.js
-
-/**
- * 将 ISO 字符串转为 UTC Date
- * 示例输入："2025-11-21T00:00:00Z"
- * 返回：Date (UTC)
- */
 export function toUtcDate(isoString) {
-  if (!isoString) return null;
+  if (!isoString) {
+    return null;
+  }
+
   return new Date(isoString);
 }
 
-/**
- * 将 UTC 时间转为指定时区的 Date
- * 默认：America/Toronto
- *
- * ⚠ 关键点：
- * JS 的 Date 本身不存时区，只能用格式化 + 重新造 Date 来实现时区转换
- */
-export function toLocalDate(
-  isoStringOrDate,
-  timezone = "America/Toronto"
-) {
-  if (!isoStringOrDate) return null;
+export function toLocalDate(isoStringOrDate, timezone) {
+  if (!isoStringOrDate) {
+    return null;
+  }
 
-  const utcDate =
-    isoStringOrDate instanceof Date
-      ? isoStringOrDate
-      : new Date(isoStringOrDate);
+  if (!timezone) {
+    timezone = "America/Toronto";
+  }
 
-  // 用 Intl API 转换成指定时区的 YYYY-MM-DD HH:mm:ss
-  const formatter = new Intl.DateTimeFormat("en-CA", {
+  var utcDate;
+
+  if (isoStringOrDate instanceof Date) {
+    utcDate = isoStringOrDate;
+  } else {
+    utcDate = new Date(isoStringOrDate);
+  }
+
+  var formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,
     year: "numeric",
     month: "2-digit",
@@ -39,27 +33,44 @@ export function toLocalDate(
     second: "2-digit",
   });
 
-  const parts = formatter.formatToParts(utcDate).reduce((acc, p) => {
-    acc[p.type] = p.value;
-    return acc;
-  }, {});
+  var partsArray = formatter.formatToParts(utcDate);
+  var parts = {};
 
-  const localStr = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`;
+  for (var i = 0; i < partsArray.length; i++) {
+    var p = partsArray[i];
+    parts[p.type] = p.value;
+  }
+
+  var localStr =
+    parts.year +
+    "-" +
+    parts.month +
+    "-" +
+    parts.day +
+    "T" +
+    parts.hour +
+    ":" +
+    parts.minute +
+    ":" +
+    parts.second;
+
   return new Date(localStr);
 }
 
-/**
- * 将 Date 格式化成本地字符串（前端展示用）
- * 返回："2025-11-21 19:30"
- */
-export function formatLocal(
-  date,
-  timezone = "America/Toronto",
-  withSeconds = false
-) {
-  if (!date) return "";
+export function formatLocal(date, timezone, withSeconds) {
+  if (!date) {
+    return "";
+  }
 
-  const options = {
+  if (!timezone) {
+    timezone = "America/Toronto";
+  }
+
+  if (typeof withSeconds === "undefined") {
+    withSeconds = false;
+  }
+
+  var options = {
     timeZone: timezone,
     year: "numeric",
     month: "2-digit",
@@ -68,56 +79,83 @@ export function formatLocal(
     minute: "2-digit",
   };
 
-  if (withSeconds) options.second = "2-digit";
+  if (withSeconds) {
+    options.second = "2-digit";
+  }
 
-  const formatter = new Intl.DateTimeFormat("en-CA", options);
-  return formatter.format(date).replace(",", "");
+  var formatter = new Intl.DateTimeFormat("en-CA", options);
+  var formatted = formatter.format(date);
+  return formatted.replace(",", "");
 }
 
-/**
- * 判断是否本地黄金时段（19:00 开球）
- * 未来推荐算法会用到
- */
-export function isPrimeTime(date, timezone = "America/Toronto") {
-  if (!date) return false;
+export function isPrimeTime(date, timezone) {
+  if (!date) {
+    return false;
+  }
 
-  const local = toLocalDate(date, timezone);
+  if (!timezone) {
+    timezone = "America/Toronto";
+  }
 
-  const hour = local.getHours();
-  const minute = local.getMinutes();
+  var local = toLocalDate(date, timezone);
 
-  return hour === 19 && minute === 0;
+  if (!local) {
+    return false;
+  }
+
+  var hour = local.getHours();
+  var minute = local.getMinutes();
+
+  if (hour === 19 && minute === 0) {
+    return true;
+  }
+
+  return false;
 }
 
-/**
- * 判断是否本地当天比赛
- */
-export function isToday(date, timezone = "America/Toronto") {
-  if (!date) return false;
+export function isToday(date, timezone) {
+  if (!date) {
+    return false;
+  }
 
-  const now = new Date();
-  const localNow = toLocalDate(now, timezone);
-  const localDate = toLocalDate(date, timezone);
+  if (!timezone) {
+    timezone = "America/Toronto";
+  }
 
-  return (
-    localNow.getFullYear() === localDate.getFullYear() &&
-    localNow.getMonth() === localDate.getMonth() &&
-    localNow.getDate() === localDate.getDate()
-  );
+  var now = new Date();
+  var localNow = toLocalDate(now, timezone);
+  var localDate = toLocalDate(date, timezone);
+
+  if (!localNow || !localDate) {
+    return false;
+  }
+
+  var sameYear = localNow.getFullYear() === localDate.getFullYear();
+  var sameMonth = localNow.getMonth() === localDate.getMonth();
+  var sameDay = localNow.getDate() === localDate.getDate();
+
+  return sameYear && sameMonth && sameDay;
 }
 
-/**
- * 判断是否明天比赛
- */
-export function isTomorrow(date, timezone = "America/Toronto") {
-  if (!date) return false;
+export function isTomorrow(date, timezone) {
+  if (!date) {
+    return false;
+  }
 
-  const now = new Date();
-  const localNow = toLocalDate(now, timezone);
-  const localDate = toLocalDate(date, timezone);
+  if (!timezone) {
+    timezone = "America/Toronto";
+  }
 
-  const diff =
-    (localDate - localNow) / (1000 * 60 * 60 * 24);
+  var now = new Date();
+  var localNow = toLocalDate(now, timezone);
+  var localDate = toLocalDate(date, timezone);
 
-  return Math.floor(diff) === 1;
+  if (!localNow || !localDate) {
+    return false;
+  }
+
+  var diffMs = localDate.getTime() - localNow.getTime();
+  var diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  return Math.floor(diffDays) === 1;
 }
