@@ -58,7 +58,7 @@ const highlightSchema = new mongoose.Schema(
     },
   },
   {
-    collection: 'highlights', // 对应你 Mongo 里的集合名
+    collection: 'highlights',
   }
 );
 
