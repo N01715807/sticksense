@@ -1,13 +1,13 @@
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const { connectDb } = require('./config/db');
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { getDb } from './lib/mongo.js';
 
 dotenv.config();
 
 const app = express();
-connectDb();
+await getDb();
 
 app.use(cors());
 app.use(express.json());
@@ -18,7 +18,7 @@ app.get('/health',(req,res)=>{
 });
 
 //API Routing
-import gamesRouter from "./routes/games.route.js";
+import gamesRouter from './routes/game.route.js';
 app.use("/api/games", gamesRouter)
 
 const PORT = process.env.PORT || 3000;

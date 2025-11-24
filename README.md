@@ -49,20 +49,43 @@ npm run dev
   - MongoDB connection successful
   - Server is running on the configured port
 
-### 4 (Optional) Pull Initial Data
+### 4 Pull Initial Data
 
 - The system is designed to fetch new data automatically. However, because a fresh database starts empty, it is recommended to run an initial sync once.
 
 - Fetch NHL Schedule (first-time only)
 ```bash
-node src/jobs/schedule.sync.js 5
+node src/jobs/schedule.sync.js
 ```
 - Fetch YouTube Highlights (first-time only)
 ```bash
 node src/jobs/youtube.sync.js
 ```
+### 5 Verifying the Backend
 
-### 5 Open the Web Interface
+- After starting the server:
+```bash
+curl http://localhost:3000/health
+```
+Expected:
+```bash
+{ "ok": true, "env": "dev" }
+```
+
+- Check Today’s Games API
+```bash
+curl http://localhost:3000/api/games/games-today
+```
+Expected:
+```bash
+{
+  "games": [
+    { ...game object with highlights... }
+  ]
+}
+```
+
+### 6 Open the Web Interface
 
 - The frontend of this project is a static HTML/JS page (no framework).  
 - After the backend is running, simply open the main page in your browser:
@@ -86,7 +109,7 @@ node src/jobs/youtube.sync.js
 
 - The frontend calls:
 ```bash
-GET /api/games/today
+GET /api/games/games-today
 ```
 - It renders:
   - Today’s upcoming games  
@@ -125,8 +148,8 @@ Raw YouTube API responses.
 
 ## API Endpoints
 
-- GET /api/games/today
+- GET /api/games/games-today
   - Returns today's upcoming and finished games, including matched YouTube highlights.
 
-- GET /api/health
+- GET /health
   - Simple health check.
