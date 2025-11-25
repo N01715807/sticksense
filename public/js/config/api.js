@@ -1,0 +1,1 @@
+export const GAMES_TODAY_URL = "http://localhost:3000/api/games/games-today";
